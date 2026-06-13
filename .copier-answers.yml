@@ -1,0 +1,18 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v2.1.2
+_src_path: https://github.com/napari/napari-plugin-template
+display_name: N5 read support
+email: chris.barnes@gerbi-gmb.de
+full_name: Chris Barnes
+github_repository_url: https://github.com/clbarnes/napari-n5
+github_username_or_organization: clbarnes
+include_reader_plugin: true
+include_sample_data_plugin: false
+include_widget_plugin: false
+include_writer_plugin: false
+install_dependabot: false
+install_precommit: false
+license: MIT
+module_name: napari_n5
+plugin_name: napari-n5
+short_description: Support for reading N5 data in napari

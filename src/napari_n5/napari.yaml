@@ -1,0 +1,15 @@
+name: napari-n5
+display_name: N5 read support
+# use 'hidden' to remove plugin from napari hub search results
+visibility: public
+# see https://napari.org/stable/plugins/technical_references/manifest.html#fields for valid categories
+# categories: []
+contributions:
+  commands:
+    - id: napari-n5.get_reader
+      python_name: napari_n5._reader:napari_get_reader
+      title: Open data with N5 read support
+  readers:
+    - command: napari-n5.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.npy']
