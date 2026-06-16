@@ -1,39 +1,31 @@
-import numpy as np
+from itertools import pairwise
+from typing import Any
 
 from napari_n5 import napari_get_reader
 
 
-# tmp_path is a pytest fixture
-def test_reader(tmp_path):
-    """An example of how you might test your plugin."""
+def test_reader_multiscale(data_dir):
+    p = str(data_dir / "n5viewer.n5")
 
-    # write some fake data using your supported file format
-    # we make the array an integer type to be compatible with the reader
-    my_test_file = str(tmp_path / 'myfile.npy')
-    original_data = np.random.rand(20, 20).astype(np.int_)
-    np.save(my_test_file, original_data)
+    reader = napari_get_reader(p)
+    assert reader is not None
+    layers_data = reader(p)
 
-    reader = napari_get_reader(my_test_file)
-    assert callable(reader)
+    assert len(layers_data) == 1
+    arrs, *kwargs_type = layers_data[0]
 
-    # make sure we're delivering the right format
-    layer_data_list = reader(my_test_file)
-    assert isinstance(layer_data_list, list) and len(layer_data_list) > 0
-    layer_data_tuple = layer_data_list[0]
-    assert isinstance(layer_data_tuple, tuple) and len(layer_data_tuple) > 0
+    assert isinstance(arrs, list)
+    assert len(arrs) == 3
+    for a, b in pairwise(arrs):
+        assert a.ndim == b.ndim
+        for a_s, b_s in zip(a.shape, b.shape, strict=True):
+            assert b_s < a_s
 
-    # make sure it's the same as it started
-    np.testing.assert_allclose(original_data, layer_data_tuple[0])
-
-
-def test_get_reader_pass(tmp_path):
-    reader = napari_get_reader('fake.file')
-    assert reader is None
-
-    # the original_data is a float type, so the reader should return None
-    my_test_file = str(tmp_path / 'myfile.npy')
-    original_data = np.random.rand(20, 20)
-    np.save(my_test_file, original_data)
-
-    reader = napari_get_reader(my_test_file)
-    assert reader is None
+    if kwargs_type:
+        kwargs: dict[str, Any]
+        kwargs, *type_tup = kwargs_type
+        assert kwargs["multiscale"]
+    if type_tup:
+        assert len(type_tup) == 1
+        layer_type = type_tup[0]
+        assert layer_type == "image"
