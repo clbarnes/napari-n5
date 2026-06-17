@@ -31,7 +31,7 @@ requires-python = ">=3.11,<4.0"
 # See best practices: https://napari.org/stable/plugins/building_a_plugin/best_practices.html
 dependencies = [
     "pydantic>=2.13.4",
-    "zarr-n5>=0.1.3",
+    "zarr-n5>=0.2.0",
     "fsspec[http]>=2026.4.0",
     "zarr>=3.1.6",
 ]
@@ -42,12 +42,20 @@ dependencies = [
 all = ["napari[all]"]
 
 [dependency-groups]
+data = [
+    "imageio>=2.37.3",
+    "numpy>=2.3.5",
+    "scikit-image>=0.26.0",
+    "tensorstore>=0.1.84",
+]
 dev = [
     "tox-uv",
     "pytest",  # https://docs.pytest.org/en/latest/contents.html
     "pytest-cov",  # https://pytest-cov.readthedocs.io/en/latest/
     "npe2>=0.8.2",
     "ruff>=0.15.17",
+    "pint>=0.25.3",
+    {include-group = "data"},
 ]
 
 [project.entry-points."napari.manifest"]

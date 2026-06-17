@@ -3,6 +3,7 @@ from typing import Self
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 DEFAULT_UNIT = "um"
+BASE_PX_UNIT = "base_px"
 
 
 class PixelResolution(BaseModel):
@@ -72,7 +73,12 @@ class N5ViewerArrayMetadata(BaseModel):
 
     def get_pixel_resolution(self) -> PixelResolution | None:
         if self.pixel_resolution is None:
-            return None
+            if self.downsampling_factors is None:
+                return None
+            else:
+                return PixelResolution(
+                    dimensions=self.downsampling_factors, unit=BASE_PX_UNIT
+                )
         elif isinstance(self.pixel_resolution, PixelResolution):
             return self.pixel_resolution
         else:
@@ -110,7 +116,7 @@ class N5ViewerGroupMetadata(BaseModel):
             raise ValueError("N5 Viewer group metadata has mismatched dimensions")
         return self
 
-    def get_pixel_resolution(self) -> PixelResolution | None:
+    def get_base_pixel_resolution(self) -> PixelResolution | None:
         if self.pixel_resolution is not None:
             return self.pixel_resolution
         elif self.resolution is not None:

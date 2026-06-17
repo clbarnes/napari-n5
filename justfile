@@ -1,3 +1,6 @@
+default:
+    just --list
+
 repl:
     uv run --all-groups --all-extras --with ipython ipython
 
@@ -6,7 +9,10 @@ fix:
     uv run --group dev ruff format
 
 data:
-    uv run --script data/generate_base.py
+    uv run --script data/generate_data.py
 
-test:
+test: data
     uv run --group dev pytest --verbose
+
+napari:
+    uv run --all-extras napari

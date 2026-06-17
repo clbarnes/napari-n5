@@ -16,7 +16,7 @@ from typing import Any
 import numpy as np
 import tensorstore as ts
 from imageio.v3 import imread
-from skimage.transform import rescale
+from skimage.transform import pyramid_gaussian
 
 DATA_PATH = Path(__file__).resolve().parent
 
@@ -44,6 +44,24 @@ def write_array(path: Path, data: np.ndarray, attributes: dict[str, Any] | None 
     dataset.write(data).result()
 
 
+def scale_u8(
+    data: np.ndarray, maxi: float | None = None, mini: float | None = None
+) -> np.ndarray:
+    if maxi is None:
+        maxi = data.max()
+    else:
+        data = data.clip(max=maxi)
+    if mini is None:
+        mini = data.min()
+    else:
+        data = data.clip(min=mini)
+    ptp = maxi - mini
+    f = data.astype("float64")
+    scaled = (f - mini) / ptp
+    scaled *= 255
+    return scaled.astype("uint8")
+
+
 def write_multiscales(
     path: Path,
     data: np.ndarray,
@@ -55,16 +73,16 @@ def write_multiscales(
         attributes = dict()
     attributes.setdefault("n5", "4.0.0")
     (path / "attributes.json").write_text(json.dumps(attributes))
-    for s_idx in range(n_scales):
+    mx = data.max()
+    mn = data.min()
+
+    for s_idx, scaled_data in enumerate(
+        pyramid_gaussian(data, n_scales - 1, preserve_range=True)
+    ):
         p = path / f"s{s_idx}"
         factors = [2**s_idx] * data.ndim
-        if s_idx == 0:
-            scaled_data = data
-        else:
-            scaled_data = rescale(
-                data, tuple(1 / f for f in factors), anti_aliasing=True
-            ).astype(data.dtype)
-        write_array(p, scaled_data, {"downsamplingFactors": factors})
+        as_u8 = scale_u8(scaled_data, mx, mn)
+        write_array(p, as_u8, {"downsamplingFactors": factors})
 
 
 def ensure_empty_directory(p: Path, parents_only: bool = False):
@@ -77,11 +95,7 @@ def ensure_empty_directory(p: Path, parents_only: bool = False):
 
 
 def main() -> None:
-    stent = imread("imageio:stent.npz").astype("float32")
-    stent -= stent.min()
-    stent /= stent.max()
-    stent *= 255
-    stent = stent.astype("uint8")
+    stent = imread("imageio:stent.npz")
 
     root = DATA_PATH / "n5viewer.n5"
     ensure_empty_directory(root)

@@ -13,15 +13,15 @@ import logging
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, TypeVar
 
-import zarr
-from pydantic import ValidationError
-from zarr.abc.store import Store
-from zarr.storage import FsspecStore
-from zarr_n5.storage import ImplicitGroupWrapperStore, N5WrapperStore
-
-from .types import N5ViewerArrayMetadata, N5ViewerGroupMetadata, PixelResolution
+from .types import (
+    BASE_PX_UNIT,
+    N5ViewerArrayMetadata,
+    N5ViewerGroupMetadata,
+    PixelResolution,
+)
 
 if TYPE_CHECKING:
+    import zarr
     from npe2.types import (
         LayerData,
         PathLike,
@@ -29,28 +29,33 @@ if TYPE_CHECKING:
         ReaderFunction,
         ReaderGetter,
     )
+    from zarr.abc.store import Store
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
 def n5_array_to_layerdata(arr: zarr.Array) -> LayerData:
+    import pydantic
+
     kwargs: dict[str, Any] = {"multiscale": False}
     try:
         meta = N5ViewerArrayMetadata.model_validate(arr.attrs)
-    except ValidationError:
+    except pydantic.ValidationError:
         return (arr, kwargs, "image")  # type: ignore
 
     ndim = arr.ndim
-    if unit := meta.resolution_unit:
-        kwargs["units"] = (unit,) * ndim
-    if res := meta.resolution:
-        kwargs["scale"] = res
+    if pr := meta.get_pixel_resolution():
+        if pr.unit != BASE_PX_UNIT:
+            kwargs["units"] = (pr.unit,) * ndim
+        kwargs["scale"] = pr.dimensions
 
     return (arr, kwargs, "image")  # type: ignore
 
 
 def n5_array_reader(path: PathOrPaths) -> list[LayerData]:
+    import zarr
+
     out = []
     for node in paths_to_nodes(path):
         if isinstance(node, zarr.Group):
@@ -61,6 +66,8 @@ def n5_array_reader(path: PathOrPaths) -> list[LayerData]:
 
 
 def scale_datasets(parent: zarr.Group) -> Iterable[zarr.Array]:
+    import zarr
+
     idx = 0
     while True:
         name = f"s{idx}"
@@ -74,6 +81,8 @@ def scale_datasets(parent: zarr.Group) -> Iterable[zarr.Array]:
 
 
 def n5viewer_multiscale_to_layerdata(group: zarr.Group) -> LayerData:
+    import pydantic
+
     # infallible
     grp_meta = N5ViewerGroupMetadata.model_validate(group.attrs)
 
@@ -103,10 +112,14 @@ def n5viewer_multiscale_to_layerdata(group: zarr.Group) -> LayerData:
             if scale is None:
                 scale = same_or(scale, arr_meta.downsampling_factors)
             if pxres is None:
-                pxres = same_or(pxres, arr_meta.get_pixel_resolution())
+                arr_pr = arr_meta.get_pixel_resolution()
+                if arr_pr is not None and arr_pr.unit == BASE_PX_UNIT:
+                    arr_pr = None
+                else:
+                    pxres = same_or(pxres, arr_pr)
             if is_base:
                 base_pxres = same_or(base_pxres, pxres)
-        except ValidationError:
+        except pydantic.ValidationError:
             pass
 
         if scale is None:
@@ -137,7 +150,7 @@ def n5viewer_multiscale_to_layerdata(group: zarr.Group) -> LayerData:
         is_base = False
 
     kwargs = {
-        # "translate": translate,
+        "translate": translate,
         "scale": scales,
         "units": (unit,) * len(translate[0]),
         "multiscale": True,
@@ -156,6 +169,8 @@ def same_or(a: T | None, *args: T | None) -> T | None:
 
 
 def n5viewer_multiscale_reader(path: PathOrPaths) -> list[LayerData]:
+    import zarr
+
     out = []
     for node in paths_to_nodes(path):
         if isinstance(node, zarr.Array):
@@ -166,6 +181,10 @@ def n5viewer_multiscale_reader(path: PathOrPaths) -> list[LayerData]:
 
 
 def path_to_node(path: PathLike) -> None | zarr.Array | zarr.Group:
+    import zarr
+    from zarr.storage import FsspecStore
+    from zarr_n5 import ImplicitGroupWrapperStore, N5WrapperStore
+
     try:
         inner = FsspecStore.from_url(path, read_only=True)
     except Exception:  # noqa: BLE001
@@ -209,6 +228,8 @@ def _get_n5_reader(path: PathOrPaths) -> None | ReaderFunction:
         If the path is a recognized format, return a function that accepts the
         same path or list of paths, and returns a list of layer data tuples.
     """
+    import zarr
+
     has_array = False
     has_group = False
     for node in paths_to_nodes(path):
