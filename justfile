@@ -11,7 +11,7 @@ fix:
 data:
     uv run --script data/generate_data.py
 
-test: data
+test:
     uv run --group dev pytest --verbose
 
 napari:
