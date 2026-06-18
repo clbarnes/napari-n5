@@ -34,12 +34,13 @@ dependencies = [
     "zarr-n5>=0.2.0",
     "fsspec[http]>=2026.4.0",
     "zarr>=3.1.6",
+    "dask>=2026.6.0",
 ]
 
 [project.optional-dependencies]
 # Allow easily installation with the full, default napari installation
 # (including Qt backend) using napari-n5[all].
-all = ["napari[all]"]
+all = ["napari[all]>=0.7.1"]
 
 [dependency-groups]
 data = [

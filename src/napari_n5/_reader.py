@@ -81,6 +81,7 @@ def scale_datasets(parent: zarr.Group) -> Iterable[zarr.Array]:
 
 
 def n5viewer_multiscale_to_layerdata(group: zarr.Group) -> LayerData:
+    import dask.array as da
     import pydantic
 
     # infallible
@@ -145,7 +146,7 @@ def n5viewer_multiscale_to_layerdata(group: zarr.Group) -> LayerData:
             res = scale
 
         translate.append(translation)
-        arrays.append(arr)
+        arrays.append(da.from_zarr(arr))
         scales.append(res)
         is_base = False
 
