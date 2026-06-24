@@ -11,7 +11,7 @@ from __future__ import annotations
 import itertools
 import logging
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from .types import (
     BASE_PX_UNIT,
@@ -32,7 +32,6 @@ if TYPE_CHECKING:
     from zarr.abc.store import Store
 
 logger = logging.getLogger(__name__)
-T = TypeVar("T")
 
 
 def n5_array_to_layerdata(arr: zarr.Array) -> LayerData:
@@ -160,7 +159,7 @@ def n5viewer_multiscale_to_layerdata(group: zarr.Group) -> LayerData:
     return (arrays, kwargs, "image")
 
 
-def same_or(a: T | None, *args: T | None) -> T | None:
+def same_or[T](a: T | None, *args: T | None) -> T | None:
     for arg in args:
         if a is None:
             a = arg
