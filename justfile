@@ -14,6 +14,11 @@ data:
 test:
     uv run --group dev pytest --verbose
 
+lint:
+    uv run --group dev ruff check src tests
+    # uv run --group dev mypy src tests
+    uv run --group dev ruff format --check src tests
+
 napari:
     uv run --all-extras napari
 
