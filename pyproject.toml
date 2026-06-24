@@ -17,22 +17,21 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Image Processing",
 ]
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.12,<4.0"
 # napari can be included in dependencies if napari imports are required.
 # However, you should not include napari[all], napari[qt],
 # or any other Qt bindings directly (e.g. PyQt5, PySide2).
 # See best practices: https://napari.org/stable/plugins/building_a_plugin/best_practices.html
 dependencies = [
     "pydantic>=2.13.4",
-    "zarr-n5>=0.2.0",
+    "zarr-n5>=0.3.1",
     "fsspec[http]>=2026.4.0",
-    "zarr>=3.1.6",
+    "zarr>=3.2.0",
     "dask>=2026.6.0",
 ]
 
