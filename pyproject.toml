@@ -50,7 +50,6 @@ data = [
     "tensorstore>=0.1.84",
 ]
 dev = [
-    "tox-uv",
     "pytest",  # https://docs.pytest.org/en/latest/contents.html
     "pytest-cov",  # https://pytest-cov.readthedocs.io/en/latest/
     "npe2>=0.8.2",

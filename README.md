@@ -48,7 +48,7 @@ pip install git+https://github.com/clbarnes/napari-n5.git
 
 ## Contributing
 
-Contributions are very welcome. Tests can be run with [tox], please ensure
+Contributions are very welcome. Tests can be run with `just test`, please ensure
 the coverage at least stays the same before you submit a pull request.
 
 ## License
@@ -72,6 +72,5 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 
 [file an issue]: https://github.com/clbarnes/napari-n5/issues
 
-[tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/
 [PyPI]: https://pypi.org/
