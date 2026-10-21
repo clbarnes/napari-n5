@@ -54,7 +54,6 @@ dev = [
     "npe2>=0.8.2",
     "ruff>=0.15.17",
     "pint>=0.25.3",
-    {include-group = "data"},
 ]
 
 [project.entry-points."napari.manifest"]
