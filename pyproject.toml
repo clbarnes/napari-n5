@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Topic :: Scientific/Engineering :: Image Processing",
 ]
 requires-python = ">=3.12,<4.0"
@@ -53,7 +54,6 @@ dev = [
     "npe2>=0.8.2",
     "ruff>=0.15.17",
     "pint>=0.25.3",
-    {include-group = "data"},
 ]
 
 [project.entry-points."napari.manifest"]
